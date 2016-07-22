@@ -1,6 +1,7 @@
 (ns quil.sketch
   (:require [quil.util :as u :include-macros true]
             [quil.middlewares.deprecated-options :as do]
+            [taoensso.timbre :as timbre :include-macros true]
             [goog.dom :as dom]
             [goog.events :as events]
             [goog.events.EventType :as EventType])
@@ -81,11 +82,11 @@
 
 (defn destroy-previous-sketch [host-elem]
   (let [host-id (dom/getElement host-elem)]
-   (println "==== destroy-previous-sketch: (.-processing-obj host-elem) ="
-            (.-processing-obj host-elem))
-   (when-let [proc-obj (.-processing-obj host-elem)]
-     (println "     destroy-previous-sketch" host-id "-- calling exit")
-     (.exit proc-obj))))
+    (timbre/debug "==== destroy-previous-sketch: (.-processing-obj host-elem) ="
+                  (.-processing-obj host-elem))
+    (when-let [proc-obj (.-processing-obj host-elem)]
+      (timbre/debug "     destroy-previous-sketch" host-id "-- calling exit")
+      (.exit proc-obj))))
 
 (defn sketch [& opts]
   (let [opts-map (apply hash-map opts)
