@@ -79,15 +79,13 @@
       (aset (aget sketch "options") "globalKeyEvents" true))
     sketch))
 
-(defn destroy-previous-sketch [host-elem host-id]
-  (println ">>>> destroy-previous-sketch" host-id)
-  (println ">>>> destroy-previous-sketch: (.-processing-obj host-elem) ="
-           (.-processing-obj host-elem))
-  (when-let [proc-obj (.-processing-obj host-elem)]
-    (println "     destroy-previous-sketch" host-id "-- calling exit")
-    (.exit proc-obj)))
-
-(def prev-host-elem-atom (atom nil))
+(defn destroy-previous-sketch [host-elem]
+  (let [host-id (dom/getElement host-elem)]
+   (println "==== destroy-previous-sketch: (.-processing-obj host-elem) ="
+            (.-processing-obj host-elem))
+   (when-let [proc-obj (.-processing-obj host-elem)]
+     (println "     destroy-previous-sketch" host-id "-- calling exit")
+     (.exit proc-obj))))
 
 (defn sketch [& opts]
   (let [opts-map (apply hash-map opts)
@@ -95,19 +93,13 @@
         renderer (or (:renderer opts-map) :p2d)]
     (if host-elem
       (do
-        (println "sketch: host-elem identical ="
-                 (identical? host-elem @prev-host-elem-atom))
         (if (.-processing-context host-elem)
           (when-not (= renderer (.-processing-context host-elem))
             (.warn js/console "WARNING: Using different context on one canvas!"))
           (set! (.-processing-context host-elem) renderer))
-        (destroy-previous-sketch host-elem (:host opts-map))
-        (let [x (set! (.-processing-obj host-elem)
-                      (js/Processing. host-elem (make-sketch opts-map)))]
-          (println ">>>> sketch: (.-processing-obj host-elem) ="
-                   (.-processing-obj host-elem))
-          (reset! prev-host-elem-atom host-elem)
-          x))
+        (destroy-previous-sketch host-elem)
+        (set! (.-processing-obj host-elem)
+              (js/Processing. host-elem (make-sketch opts-map))))
       (.error js/console "ERROR: Cannot create sketch. :host is not specified."))))
 
 (def sketch-init-list (atom (list )))
